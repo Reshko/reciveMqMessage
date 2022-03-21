@@ -1,6 +1,7 @@
 package ru.mts.emulator;
 
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.jms.*;
@@ -11,6 +12,7 @@ import static ru.mts.emulator.Application.responseQueue;
 public class Listener {
 
     @JmsListener(destination = Application.requestQueue)
+    @Async("taskExecutor")
     public void receiveMessage(Message msg, Session session) throws JMSException {
 
         String text;
@@ -28,6 +30,7 @@ public class Listener {
         Destination destination = session.createQueue(responseQueue);
         MessageProducer newDest = session.createProducer(destination);
         TextMessage responseMsg = session.createTextMessage("Replying to " + text);
+        System.out.println(text);
         responseMsg.setJMSCorrelationID(corrID);
         responseMsg.setJMSMessageID(msgID);
         newDest.send(responseMsg);
